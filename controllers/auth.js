@@ -33,15 +33,20 @@ const login = (req, res) => {
         if (err) return res.json(err);
         if (data.length === 0) return res.status(404).json("User not found");
 
-        const userPassword = data[0].password;
-        const userId = data[0].id;
+        const { password: hashedPassword, id, ...other } = data[0];
 
-        const isPasswordCorrect = bcrypt.compareSync(password, userPassword);
+        const isPasswordCorrect = bcrypt.compareSync(password, hashedPassword);
 
         if (!isPasswordCorrect)
             return res.stats(400).json("Wrong username or password");
 
-        const token = jwt.sign({ id: userId }, "jwtkey");
+        const token = jwt.sign({ id: id }, "jwtkey");
+
+        res.cookie("access_token", token, {
+            httpOnly: true,
+        })
+            .status(200)
+            .json(other);
     });
 };
 
