@@ -46,12 +46,17 @@ const login = (req, res) => {
             httpOnly: true,
         })
             .status(200)
-            .json(other);
+            .json({ ...other, id });
     });
 };
 
 const logout = (req, res) => {
-    res.json("Logout");
+    res.clearCookie("access_token", {
+        sameSite: "none",
+        secure: true,
+    })
+        .status(200)
+        .json("User has been logged out");
 };
 
 export { register, login, logout };
