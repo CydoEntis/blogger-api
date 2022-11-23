@@ -16,7 +16,6 @@ const getPosts = (req, res) => {
 
 const getPost = (req, res) => {
     const id = req.params.id;
-    console.log(id);
     const query =
         "SELECT p.id, `username`, `title`, `desc`, p.img, u.img AS userImg, `cat`,`date` FROM users u JOIN posts p ON u.id = p.uid WHERE p.id = ? ";
 
