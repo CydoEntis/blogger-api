@@ -27,7 +27,24 @@ const getPost = (req, res) => {
 };
 
 const addPost = (req, res) => {
-    res.json("Post from controller");
+    const token = req.cookies.access_token;
+    if (!token) return res.status(401).json("Not authenticated");
+
+    jwt.verify(token, "jwtkey", (err, userInfo) => {
+        const { title, desc, img, cat, date } = req.body;
+        if (err) return res.status(403).json("Token is not valid");
+
+        const query =
+            "INSERT INTO posts(`title`, `desc`, `img`, `cat`, `date`, `uid`) VALUES (?)";
+
+        const values = [title, desc, img, cat, date, userInfo.id];
+
+        db.query(query, [values], (err, data) => {
+            if (err) return res.status(500).json(err);
+
+            return res.status(200).json("Post has been created");
+        });
+    });
 };
 
 const deletePost = (req, res) => {
@@ -49,8 +66,6 @@ const deletePost = (req, res) => {
     });
 };
 
-const updatePost = (req, res) => {
-    res.json("Post from controller");
-};
+const updatePost = (req, res) => {};
 
 export { getPosts, getPost, addPost, deletePost, updatePost };
