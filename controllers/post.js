@@ -2,15 +2,49 @@ import { db } from "../db.js";
 import jwt from "jsonwebtoken";
 
 const getPosts = (req, res) => {
+    const resultsPerPage = 2;
     const category = req.query.cat;
-    const query = category
+    let query = category
         ? "SELECT * FROM posts WHERE cat=?"
         : "SELECT * FROM posts";
 
     db.query(query, [category], (err, data) => {
-        if (err) return res.status(500).json(err);
+        console.log("data: ", data);
 
-        return res.status(200).json(data);
+        console.log("error: ", err);
+        const numOfResults = data.length;
+        console.log(numOfResults);
+        if (numOfResults <= 0) {
+            return res.status(404).json({ message: "No records found" });
+        }
+        const numOfPages = Math.ceil(numOfResults / resultsPerPage);
+        let page = req.query.page ? Number(req.query.page) : 1;
+        console.log(page);
+
+        if (page > numOfPages) {
+            page = numOfPages;
+        } else if (page < 0) {
+            page = 1;
+        }
+
+        const startingLimit = (page - 1) * resultsPerPage;
+        // console.log("Starting limit" + startingLimit);
+        const category = req.query.cat;
+        console.log(category);
+        query = category
+            ? `SELECT * FROM posts WHERE cat=? LIMIT ${startingLimit}, ${resultsPerPage}`
+            : `SELECT * FROM posts LIMIT ${startingLimit}, ${resultsPerPage}`;
+
+        console.log(query);
+        db.query(query, [category], (err, data) => {
+            console.log(data);
+
+            return res.status(200).json({
+                data,
+                page,
+                numOfPages,
+            });
+        });
     });
 };
 
